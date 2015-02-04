@@ -1,0 +1,10 @@
+# Batch script to add the JMS configuration to the JBoss server
+
+# Start batching commands
+batch
+
+# Configure the JMS test queue
+jms-queue add --queue-address=bidconfirmations --entries=queue/bidconfirmations,java:jboss/exported/jms/queue/bidconfirmations
+
+# Run the batch commands
+run-batch
