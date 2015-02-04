@@ -34,10 +34,13 @@ tasks.withType(Test) {
 task copyWeb(type: Copy) {
     // Copy everything under src/main/webapp
     from '../web/dist'
-    from 'temp/WEB-INF'
+    from 'temp'
+
     // Determine the destination directory later
     into { 'src/main/webapp' }
 }
+
+
 
 task deleteWeb(type: Delete) {
     delete 'src/main/webapp'

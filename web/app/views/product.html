@@ -65,7 +65,8 @@
       </p>
     </div>
     <div class="col-sm-12 col-md-3">
-      <form class="form-horizontal" role="form" ng-submit="ctrl.placeBid()">
+        <p ng-class="ctrl.typeNotification" ng-hide="ctrl.hideNotification">{{ctrl.notification}}</p>
+        <form class="form-horizontal" role="form" ng-submit="ctrl.placeBid()">
         <div class="form-group">
           <input type="text" class="form-control" value="" ng-model="ctrl.bidAmount">
         </div>

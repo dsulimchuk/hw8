@@ -4,7 +4,7 @@ package com.farata.course.mwd.auction.engine.service;
 public enum Notification {
 
     OK_YOUR_BID_IS_WINNING,
-
+    OK_SUCCESS_PLACE_BID,
     //Notifications
     NOTIF_YOUR_BID_IS_OVERBIDDED,
 

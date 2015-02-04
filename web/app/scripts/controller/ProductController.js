@@ -5,26 +5,31 @@
   var _this = null;
   var _$rootScope = null;
 
+
   var updateModel = function(){
+
     //if bidServise is active, then model should refresh via websockets
     if (_bidService.active != true) {
       console.log("updateModel");
       _productService.getProductById(_this.product.id).then(function(data) {
       _this.product = data;
       _this.timeleft = updateTimeLeft(data);
+          _bidService.serveForProduct(_this.product, _this);
       });
     }
 
   };
   var timeout = setInterval(function(){
-    updateModel();
+    if (_bidService) {
+        updateModel();
+    }
   }, 3000);
 
   var updateTimeLeft = function(product){
     if (product.auctionIsClosed) {
       return 'Closed';
     } else {
-      return (new Date(product.auctionEndTime) - new Date()) / 1000;
+      return  (((new Date(product.auctionEndTime) - new Date()) / 1000)/60).toFixed(2);
     }
 
   };
@@ -36,10 +41,13 @@
     this.searchForm = searchFormService;
     this.rest = Restangular.all('bid');
     this.bidAmount = null;
+    this.notification = '';
+    this.hideNotification = true;
+    this.typeNotification = '';
     _productService = ProductService;
     _this = this;
     _bidService = BidService;
-    _bidService.serveForProduct(product, _this);
+      _bidService.serveForProduct(_this.product, _this);
     _$rootScope = $rootScope;
 
 

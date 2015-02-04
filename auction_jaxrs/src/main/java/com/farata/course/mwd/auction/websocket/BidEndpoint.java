@@ -10,46 +10,44 @@ import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @ServerEndpoint("/api/ws")
 public class BidEndpoint {
+    private static Set<BidEndpoint> allEndpoints = new HashSet<>();
+    private static final DateTimeFormatter timeFormatter =
+            DateTimeFormatter.ofPattern("HH:mm:ss");
+
     private DataEngine dataEngine;
+    private Integer userId;
+    private Integer productId;
+    private Session session;
+    public BidEndpoint() {
+        System.out.println("!!!!!!!NEW BID ENDPOINT");
+    }
 
     @Inject
     public void setDataEngine(DataEngine dataEngine) {
         this.dataEngine = dataEngine;
     }
 
-    private static Set<Session> allSessions;
-    private static Map<Session, Product> sessionMap = new HashMap<>();
-
-    static ScheduledExecutorService timer =
-            Executors.newSingleThreadScheduledExecutor();
-
-    static   DateTimeFormatter timeFormatter =
-            DateTimeFormatter.ofPattern("HH:mm:ss");
 
     public transient List<Session> participantList = new ArrayList<>();
 
     @OnMessage
     public void onMessage(String textMessage, Session mySession) {
-
-//        try {
-            sessionMap.put(mySession, dataEngine.findProductById(Integer.parseInt(textMessage)));
-            System.out.println("CONNECTED " + sessionMap);
-//            mySession.getBasicRemote().sendText(
-//                    "[Server speaking]: Got your message " + textMessage + "Sending it back to you");
-
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        String[] keys = textMessage.split(":");
+        this.productId = Integer.parseInt(keys[0]);
+        this.userId = Integer.parseInt(keys[1]);
+        System.out.println("CONNECTED " + mySession);
     }
 
     @OnClose
     public void onClose(Session session, CloseReason closeReason) {
+        allEndpoints.remove(this);
         System.err.println("Closing: " + closeReason.getReasonPhrase());
     }
 
@@ -60,30 +58,41 @@ public class BidEndpoint {
 
     @OnOpen
     public void showTime(Session session){
-        System.out.println("open new session" + sessionMap);
+        this.session = session;
+        allEndpoints.add(this);
+        System.out.println("open new session" + session);
     }
 
-    public static void sendTimeToAll(Product product, AuctionEngine auction){
 
-        Optional<Session> firstSession = sessionMap.keySet().stream()
-                .filter(s -> s.isOpen())
-                .findFirst();
+    public static void sendToAllProductVisitors(Product product, AuctionEngine auction){
 
-        if (firstSession.isPresent()){
-            allSessions = firstSession.get().getOpenSessions();
-
-            for (Session sess: allSessions){
-                if (!sessionMap.get(sess).equals(product))
-                    continue;
-                try{
-                    JsonObject productReport = auction.getJsonReportForProduct(product).build();
-                    sess.getBasicRemote().sendText(productReport.toString());
-                } catch (IOException ioe) {
-                    System.out.println(ioe.getMessage());
-                }
-            }
-        }
-
+        allEndpoints.stream()
+                .filter(s -> s.productId.equals(product.getId()))
+                .forEach(s -> {
+                    Session curSession = s.session;
+                    if (curSession.isOpen()) {
+                        try{
+                            JsonObject productReport = auction.getJsonReportForProduct(product).build();
+                            curSession.getBasicRemote().sendText("product::" + productReport);
+                        } catch (IOException ioe) {
+                            System.out.println(ioe.getMessage());
+                        }
+                    }
+                });
+    }
+    public static void sendToUser(Integer userId, String msg){
+        allEndpoints.stream()
+                .filter(s -> s.userId.equals(userId))
+                .forEach(s -> {
+                    Session curSession = s.session;
+                    if (curSession.isOpen()) {
+                        try {
+                            curSession.getBasicRemote().sendText("notification:" + msg);
+                        } catch (IOException ioe) {
+                            System.out.println(ioe.getMessage());
+                        }
+                    }
+                });
     }
 
 

@@ -1,13 +1,18 @@
 package com.farata.course.mwd.auction.engine;
 
 
+import com.farata.course.mwd.auction.engine.config.MainConfig;
 import com.farata.course.mwd.auction.engine.service.Notification;
 import com.farata.course.mwd.auction.engine.service.NotificationService;
 import com.farata.course.mwd.auction.entity.Bid;
 import com.farata.course.mwd.auction.entity.Product;
+import com.farata.course.mwd.auction.websocket.BidEndpoint;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.jms.*;
 import javax.json.Json;
 import javax.json.JsonArray;
 import javax.json.JsonArrayBuilder;
@@ -18,13 +23,47 @@ import java.util.*;
 @Singleton
 public class AuctionEngineImpl implements AuctionEngine {
 
-    private NotificationService notificationService;
+    @Inject
+    MainConfig conf;
 
+    @Resource(lookup ="java:/ConnectionFactory")
+    ConnectionFactory connectionFactory;
+
+    @Resource(lookup = "queue/incomingbids")
+    javax.jms.Queue incQueue;
+
+    @Resource(lookup = "queue/bidconfirmations")
+    javax.jms.Queue confirmQueue;
+
+    private JMSContext context;
+    private JMSConsumer consumerInc;
+    private JMSConsumer consumerConfimation;
+    private JMSProducer producer;
+
+    private NotificationService notificationService;
 
     private Map<Product, List<Bid>> currentBids = new HashMap<>();
 
     public AuctionEngineImpl() {
-        System.out.println("AuctionEngineImpl");
+    }
+
+    @PostConstruct
+    public void init() {
+        try {
+            context = connectionFactory.createContext(conf.DEFAULT_USERNAME, conf.DEFAULT_PASSWORD);
+            consumerInc = context.createConsumer(incQueue);
+            consumerInc.setMessageListener(
+                    new BidsMessageListener((b) -> this.placeBid(b)));
+            consumerConfimation = context.createConsumer(confirmQueue);
+            consumerConfimation.setMessageListener(
+                    new BidsMessageListener(
+                            (b) -> BidEndpoint.sendToAllProductVisitors(b.getProduct(), this)));
+
+            producer = context.createProducer();
+
+        }catch (Exception e) {
+            System.out.println(e);
+        }
     }
 
     @Inject
@@ -60,6 +99,7 @@ public class AuctionEngineImpl implements AuctionEngine {
         }
 
         bids.add(bid);
+        notificationService.sendNotification(bid.getUser(), Notification.OK_SUCCESS_PLACE_BID);
 
         Optional<BigDecimal> currentMax = bids.stream()
                 .filter(b -> b != bid && b.getAmount().compareTo(b.getProduct().getReservedPrice()) < 0)
@@ -90,6 +130,8 @@ public class AuctionEngineImpl implements AuctionEngine {
                         }
                     });
         }
+        //send updated product to all users
+        confirmBid(bid);
     }
 
     @Override
@@ -164,5 +206,7 @@ public class AuctionEngineImpl implements AuctionEngine {
         return productJsonBuilder;
 
     }
-
+    private void confirmBid(Bid bid) {
+        producer.send(confirmQueue, bid);
+    }
 }

@@ -7,13 +7,14 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Bid {
+public class Bid implements Serializable{
 
     // TODO: Use Bean Validation for other properties
     @NotNull
@@ -122,5 +123,21 @@ public class Bid {
 
     public void setWinning(boolean isWinning) {
         this.isWinning = isWinning;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if ((obj == null) || (obj.getClass() != this.getClass()))
+            return false;
+        // object must be Test at this point
+        Bid test = (Bid) obj;
+        return this.id == test.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id;
     }
 }

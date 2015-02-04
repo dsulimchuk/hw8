@@ -27,7 +27,26 @@
             this.ws.onmessage = function(e) {
                 console.log("echo from server : " + e.data);
                 $rootScope.$apply(function() {
-                    ProductController.product = JSON.parse(e.data);
+                    var delimiterPos = e.data.indexOf(':');
+                    var delimiter2Pos = e.data.indexOf(':', delimiterPos + 1);
+                    var type = e.data.slice(0, delimiterPos);
+                    var typeOfNot = e.data.slice(delimiterPos + 1, delimiter2Pos);
+                    var obj = e.data.slice( delimiter2Pos + 1);
+                    console.log('!!!!arrive ' + type);
+                    if (type == 'product') {
+                        ProductController.product = JSON.parse(obj);
+                    }else if (type == 'notification') {
+                        ProductController.notification = obj;
+                        if (typeOfNot == 'ok') {
+                            ProductController.typeNotification = 'bg-success';
+                        }else if (typeOfNot == 'warning') {
+                            ProductController.typeNotification = 'bg-warning';
+                        }else {
+                            ProductController.typeNotification = 'bg-danger';
+                        }
+                        ProductController.hideNotification = false;
+                    }
+
                 });
 
             };
@@ -46,12 +65,13 @@
 
     BidService.prototype = {
       serveForProduct: function(product, _ProductController) {
+          var credentials = product.id+':'+_$rootScope.USER_ID;
           if (_this.ws.readyState === 1) {
-              _this.ws.send(product.id);
+              _this.ws.send(credentials);
           } else {
               deferred.promise.then(function(){
                   console.log("defered");
-                  _this.ws.send(product.id);
+                  _this.ws.send(credentials);
               });
           }
           ProductController = _ProductController;

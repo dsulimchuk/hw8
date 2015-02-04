@@ -4,13 +4,14 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.xml.bind.annotation.*;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Product {
+public class Product implements Serializable{
 
     private Integer id;
     private String title;
@@ -157,5 +158,17 @@ public class Product {
     }
     public JsonObject getJsonObject() {
         return getJsonObjectBuilder().build();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || this.getClass() != obj.getClass() )
+            return false;
+        return this.id.equals(((Product) obj).id);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id.intValue();
     }
 }

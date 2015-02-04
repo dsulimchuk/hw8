@@ -3,8 +3,9 @@ package com.farata.course.mwd.auction.entity;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.xml.bind.annotation.XmlTransient;
+import java.io.Serializable;
 
-public class User {
+public class User implements Serializable {
     private int id;
     private String name;
     private String email;
@@ -67,5 +68,21 @@ public class User {
 
     public void setHasOverbidNotifications(boolean hasOverbidNotifications) {
         this.hasOverbidNotifications = hasOverbidNotifications;
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if ((obj == null) || (obj.getClass() != this.getClass()))
+            return false;
+        // object must be Test at this point
+        User test = (User) obj;
+        return this.id == test.id;
     }
 }
