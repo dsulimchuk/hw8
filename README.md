@@ -11,3 +11,10 @@ Modern Web Application Development for Java Programmers Homework 8
 ###### to run demo:
 1. In web folder run "npm install && bower install && grunt build".
 2. In auction_jaxrs folder run "./gradlew build" and then manually deploy "auction_jaxrs-1.0.war" under WildFly
+3. Add program argument -c standalone-full.xml to startup command Wildfly server.
+4. Open the Terminal (or Command) Window, change to the Wildfly bin directory and run the following command 
+  ./jboss-cli.sh --connect --file=configure-jms.cli (Modify the script to create 2 queues: incomingbids and bidconfirmations) p.s. configure-jms.cli added to the root of project 
+
+5. Add an Application user according to the instructions from section Add an Application User Interactively at http://bit.ly/1nUOghD
+
+
