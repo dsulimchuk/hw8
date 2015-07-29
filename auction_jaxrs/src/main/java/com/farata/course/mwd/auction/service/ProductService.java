@@ -16,10 +16,13 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.logging.Logger;
 
 @Path("/product")
 @Produces("application/json")
 public class ProductService {
+
+    private static final Logger log = Logger.getLogger(ProductService.class.getName());
 
     DataEngine dataEngine;
     private AuctionEngine auction;
@@ -101,12 +104,12 @@ public class ProductService {
     public Response getProductById(@PathParam("id") int productId, @Context HttpHeaders headers) {
 
         String userAgent = headers.getRequestHeader("user-agent").get(0);
-        System.out.println("Got request form " + userAgent);
+        log.info("Got request form " + userAgent);
         Product product = dataEngine.findProductById(productId);
 
 
         if (product != null) {
-            System.out.println("findProduct method has returned " + product
+            log.info("findProduct method has returned " + product
                 .getTitle());
 
 
@@ -122,12 +125,12 @@ public class ProductService {
         @Context HttpHeaders headers) {
 
         String userAgent = headers.getRequestHeader("user-agent").get(0);
-        System.out.println("Got request form " + userAgent);
+        log.info("Got request form " + userAgent);
         Product product = dataEngine.findProductById(productId);
 
 
         if (product != null) {
-            System.out.println("findProduct method has returned " + product
+            log.info("findProduct method has returned " + product
                 .getTitle());
             return product;
         } else {

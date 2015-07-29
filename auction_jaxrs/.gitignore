@@ -1,7 +1,7 @@
 build
 .git
 .gradle/
-gradle/*
+#gradle/*
 src/main/webapp
 
 # Logs and databases #

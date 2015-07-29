@@ -74,13 +74,6 @@ MainConfig mainConfig;
     @Resource(lookup = "queue/incomingbids")
     Queue incQueue;
 
-
-//    @GET
-//    @Path("/{id}/")
-//    public Bid getBid(@PathParam("id") int id, @Context HttpHeaders headers) {
-//        return new Bid(id, new BigDecimal(42));
-//    }
-
     @POST
     @Consumes("application/json")
     public Response placeBid(JsonObject bidJson) {

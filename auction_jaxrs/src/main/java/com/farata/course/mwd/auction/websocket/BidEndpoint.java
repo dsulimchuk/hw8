@@ -14,9 +14,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 @ServerEndpoint("/api/ws")
 public class BidEndpoint {
+    private static final Logger log = Logger.getLogger(BidEndpoint.class.getName());
     private static Set<BidEndpoint> allEndpoints = new HashSet<>();
     private static final DateTimeFormatter timeFormatter =
             DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -26,7 +28,7 @@ public class BidEndpoint {
     private Integer productId;
     private Session session;
     public BidEndpoint() {
-        System.out.println("!!!!!!!NEW BID ENDPOINT");
+        log.info("!!!!!!!NEW BID ENDPOINT");
     }
 
     @Inject
@@ -42,7 +44,7 @@ public class BidEndpoint {
         String[] keys = textMessage.split(":");
         this.productId = Integer.parseInt(keys[0]);
         this.userId = Integer.parseInt(keys[1]);
-        System.out.println("CONNECTED " + mySession);
+        log.info("CONNECTED " + mySession);
     }
 
     @OnClose
@@ -60,7 +62,7 @@ public class BidEndpoint {
     public void showTime(Session session){
         this.session = session;
         allEndpoints.add(this);
-        System.out.println("open new session" + session);
+        log.info("open new session" + session);
     }
 
 
@@ -75,7 +77,7 @@ public class BidEndpoint {
                             JsonObject productReport = auction.getJsonReportForProduct(product).build();
                             curSession.getBasicRemote().sendText("product::" + productReport);
                         } catch (IOException ioe) {
-                            System.out.println(ioe.getMessage());
+                            log.info(ioe.getMessage());
                         }
                     }
                 });
@@ -89,7 +91,7 @@ public class BidEndpoint {
                         try {
                             curSession.getBasicRemote().sendText("notification:" + msg);
                         } catch (IOException ioe) {
-                            System.out.println(ioe.getMessage());
+                            log.info(ioe.getMessage());
                         }
                     }
                 });

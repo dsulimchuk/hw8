@@ -19,6 +19,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObjectBuilder;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.logging.Logger;
 
 @Singleton
 public class AuctionEngineImpl implements AuctionEngine {
@@ -34,6 +35,8 @@ public class AuctionEngineImpl implements AuctionEngine {
 
     @Resource(lookup = "queue/bidconfirmations")
     javax.jms.Queue confirmQueue;
+
+    private static final Logger log = Logger.getLogger(AuctionEngineImpl.class.getName());
 
     private JMSContext context;
     private JMSConsumer consumerInc;
@@ -62,7 +65,7 @@ public class AuctionEngineImpl implements AuctionEngine {
             producer = context.createProducer();
 
         }catch (Exception e) {
-            System.out.println(e);
+            log.info(e.getLocalizedMessage());
         }
     }
 
@@ -73,7 +76,7 @@ public class AuctionEngineImpl implements AuctionEngine {
 
     //ENGINE
     synchronized public void placeBid(Bid bid) {
-        System.out.println("call placeBid " + bid);
+        log.info("call placeBid " + bid);
         List<Bid> bids = getBidsForProduct(bid.getProduct());
         if (bids.contains(bid)) {
             return;
