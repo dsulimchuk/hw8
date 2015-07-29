@@ -1,6 +1,7 @@
 build
 .git
 .gradle/
+.ides/*
 #gradle/*
 src/main/webapp
 
