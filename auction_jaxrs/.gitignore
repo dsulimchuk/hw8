@@ -2,6 +2,8 @@ build
 .git
 .gradle/
 .ides/*
+out
+temp
 #gradle/*
 src/main/webapp
 
